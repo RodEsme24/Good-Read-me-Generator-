@@ -2,13 +2,18 @@ const inquirer = require("inquirer");
 const axios = require("axios");
 const fs = require("fs");
 const util = require("util");
-let genRead = answers => { 
+let genRead = (answers, userPic,userEmail) => {
   return `
+  (${userPic})
+
   Project name:
    # ${answers.title}
 ​
   Project description
    # ${answers.description} 
+
+  User Email:
+   # ${userEmail}
 ​
    ## Table of Contents 
 ​
@@ -109,6 +114,14 @@ function notifyPrompt() {
   ]);
 }
 
-notifyPrompt().then(function(answers){const readMe = genRead(answers);
-    return writeFileAsync("readmeGenerated.md", readMe)});
- 
+notifyPrompt().then(function (answers) {
+  let endPoint = " https://api.github.com/users/" + answers.user
+  var generated;
+  axios(endPoint).then(res=>{
+    let userPic = res.data.avatar_url;
+    let userEmail = res.data.email;
+    const readMe = genRead(answers, userPic, userEmail);
+    generated = writeFileAsync("readmeGenerated.md", readMe)
+  })
+  return generated;
+});
